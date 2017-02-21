@@ -25,17 +25,18 @@ LIBS=$(PROTO)/lib/binbootloader.o $(PROTO)/lib/binstack.o $(PROTO)/lib/stack.a
 
 INCLUDE=-I$(PROTO)/ble_stack/inc/ -I$(PROTO)/ble_stack/inc/common/ -I$(PROTO)/ble_stack/inc/soc/ -I$(BLE)/platform/emlib/inc/ -I$(BLE)/platform/emlib/src/ -I$(BLE)/platform/Device/SiliconLabs/$(DEVICE)/Include/ -I$(BLE)/platform/CMSIS/Include/ -I../bgbuild/
 
-OFILES=main.o gatt_db.o InitDevice.o em_i2c.o em_usart.o em_gpio.o
+SOURCES:=$(shell echo *.c)
+OBJECTS:=$(SOURCES:.c=.o)
 
 all: BLE_device.bin
 
 # GATT definition
-gatt_db.h gatt_db.c: gatt.bgproj Makefile
+gatt_db.h gatt_db.c: gatt.bgproj gatt.xml
 	$(PROTO)/bin/bgbuild -gn -c $(TOOLCHAIN) $<
 
 # ELF file of application & stack
-BLE_device.elf: $(OFILES) Makefile
-	$(LD) $(LDFLAGS) $(OFILES) $(LIBS) $(LINKERFILE) $(STARTUP) -o $@
+BLE_device.elf: $(OBJECTS) Makefile
+	$(LD) $(LDFLAGS) $(OBJECTS) $(LIBS) $(LINKERFILE) $(STARTUP) -o $@
 
 %.o:%.c Makefile
 	$(CC) $(CFLAGS) $(INCLUDE) $< -o $@
@@ -54,6 +55,6 @@ load: BLE_device.bin
 run: load
 
 clean:
-	rm -rf $(OFILES) gatt_db.* constants BLE_device.*
+	rm -rf $(OBJECTS) gatt_db.* constants BLE_device.*
 
 .PHONY: all run load clean
