@@ -43,8 +43,6 @@ static void hardware_init() {
     GPIO_PinOutSet(LED1_bank, LED1_pin);
 }
 
-static void services_init() { }
-
 static void ledBlink() {
     static int toggle = 0;
 
@@ -63,12 +61,6 @@ int main() {
     // Initialize Blue Gecko module
     enter_DefaultMode_from_RESET();
     gecko_init(&config);
-
-    // Hardware initialization
-    //hardware_init();
-
-    // Services initialization
-    services_init();
 
     while (1) {
         /* Event pointer for handling events */

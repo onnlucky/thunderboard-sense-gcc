@@ -14,16 +14,16 @@ LD=$(TOOLCHAIN)/bin/arm-none-eabi-gcc
 OBJCOPY=$(TOOLCHAIN)/bin/arm-none-eabi-objcopy
 
 DEFINES=-D__NO_SYSTEM_INIT -D$(PART_NUMBER)
-CPUFLAGS=-mcpu=cortex-m4 -march=armv7e-m -mthumb
-LDFLAGS=$(CPUFLAGS) --specs=nosys.specs $(DEFINES) -Os -gdwarf-2 -Wl,-no-wchar-size-warning,--no-enum-size-warning
-CFLAGS=-Wall -Werror -c $(CPUFLAGS) -fno-short-enums $(DEFINES) -Os
+CPUFLAGS=-mcpu=cortex-m4 -march=armv7e-m -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp -std=c99
+LDFLAGS=$(CPUFLAGS) --specs=nosys.specs $(DEFINES) -Os -gdwarf-2 -Wl,-no-wchar-size-warning,--no-enum-size-warning -lm
+CFLAGS=-Wall -Werror -Wno-strict-aliasing -c $(CPUFLAGS) -fno-short-enums $(DEFINES) -Os -lm
 
 STARTUP=startup_efr32mg1p.S
 LINKERFILE=-Tefr32mg1p.ld
 
 LIBS=$(PROTO)/lib/binbootloader.o $(PROTO)/lib/binstack.o $(PROTO)/lib/stack.a
 
-INCLUDE=-I$(PROTO)/ble_stack/inc/ -I$(PROTO)/ble_stack/inc/common/ -I$(PROTO)/ble_stack/inc/soc/ -I$(BLE)/platform/emlib/inc/ -I$(BLE)/platform/emlib/src/ -I$(BLE)/platform/Device/SiliconLabs/$(DEVICE)/Include/ -I$(BLE)/platform/CMSIS/Include/ -I../bgbuild/
+INCLUDE=-I$(PROTO)/ble_stack/inc/ -I$(PROTO)/ble_stack/inc/common/ -I$(PROTO)/ble_stack/inc/soc/ -I$(BLE)/platform/emlib/inc/ -I$(BLE)/platform/emlib/src/ -I$(BLE)/platform/Device/SiliconLabs/$(DEVICE)/Include/ -I$(BLE)/platform/CMSIS/Include/ -I$(BLE)/platform/radio/rail_lib/chip/efr32/rf/common/cortex/
 
 SOURCES:=$(shell echo *.c)
 OBJECTS:=$(SOURCES:.c=.o)
@@ -38,7 +38,7 @@ gatt_db.h gatt_db.c: gatt.bgproj gatt.xml
 BLE_device.elf: $(OBJECTS) Makefile
 	$(LD) $(LDFLAGS) $(OBJECTS) $(LIBS) $(LINKERFILE) $(STARTUP) -o $@
 
-%.o:%.c Makefile
+%.o:%.c *.h Makefile
 	$(CC) $(CFLAGS) $(INCLUDE) $< -o $@
 
 gatt_db.c: gatt_db.h
